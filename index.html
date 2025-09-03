@@ -1,1 +1,224 @@
-hello
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日GitHub趋势</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2eaadc',
+                        secondary: '#171515',
+                        accent: '#f1e05a',
+                        dark: '#161b22',
+                        light: '#f0f6fc',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .card-hover {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            }
+            .language-dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                display: inline-block;
+            }
+            .skeleton {
+                background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+                background-size: 200% 100%;
+                animation: loading 1.5s infinite;
+            }
+            @keyframes loading {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-github text-2xl text-gray-800"></i>
+                <h1 class="text-xl font-bold text-gray-800">GitHub 每日趋势</h1>
+            </div>
+            <div class="text-gray-500 text-sm">
+                <span id="current-date">2025-07-31</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 趋势概览 -->
+        <div class="mb-10 text-center">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">今日热门仓库</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">发现最受欢迎的开源项目，了解开发者社区的最新动态和趋势</p>
+        </div>
+
+        <!-- 仓库列表容器 - 已添加 -->
+        <div id="repos-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- 加载状态骨架屏 -->
+            <div class="bg-white rounded-lg overflow-hidden card-shadow h-64 skeleton"></div>
+            <div class="bg-white rounded-lg overflow-hidden card-shadow h-64 skeleton"></div>
+            <div class="bg-white rounded-lg overflow-hidden card-shadow h-64 skeleton"></div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-gray-300 py-10 mt-20">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fa fa-github text-xl"></i>
+                        <span class="font-bold text-white">GitHub 趋势</span>
+                    </div>
+                    <p class="text-sm text-gray-400">每日更新的GitHub热门仓库展示</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-linkedin text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>© 2025 GitHub 趋势. 数据来源于GitHub.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 编程语言颜色映射
+        const languageColors = {
+            'Python': '#3572A5',
+            'TypeScript': '#3178C6',
+            'C++': '#F34B7D',
+            'Rust': '#DEA584',
+            'Go': '#00ADD8',
+            'Swift': '#F05138',
+            'Java': '#B07219',
+            'default': '#808080'
+        };
+
+        // 数字格式化
+        function formatNumber(num) {
+            return num.toLocaleString();
+        }
+
+        // 设置当前日期
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // 设置日期
+                const today = new Date();
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('current-date').textContent = today.toLocaleDateString('zh-CN', options);
+
+                // 渲染仓库列表
+                const repos = [{"name":"dockur/windows","url":"https://github.com/dockur/windows","description":"Windows inside a Docker container.","stars":43272,"forks":3142,"language":"Shell","language_color":"#89e051","stars_today":1979,"period_stars":1979,"owner":"dockur","repo_name":"windows","avatar_url":"https://avatars.githubusercontent.com/u/5763256?s=40&v=4","crawled_at":"2025-09-03T13:02:28.413774"},{"name":"crewAIInc/crewAI","url":"https://github.com/crewAIInc/crewAI","description":"Framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, CrewAI empowers agents to work together seamlessly, tackling complex tasks.","stars":37093,"forks":4921,"language":"Python","language_color":"#3572A5","stars_today":189,"period_stars":189,"owner":"crewAIInc","repo_name":"crewAI","avatar_url":"https://avatars.githubusercontent.com/u/667063?s=40&v=4","crawled_at":"2025-09-03T13:02:28.414788"},{"name":"JetBrains/koog","url":"https://github.com/JetBrains/koog","description":"Koog is the official Kotlin framework for building and running robust, scalable and production-ready AI agents across all platforms – from backend services to Android and iOS, JVM, and even in-browser environments. Koog is based on our AI products expertise and provides proven solutions for complex LLM and AI problems","stars":2692,"forks":177,"language":"Kotlin","language_color":"#A97BFF","stars_today":584,"period_stars":584,"owner":"JetBrains","repo_name":"koog","avatar_url":"https://avatars.githubusercontent.com/u/6064345?s=40&v=4","crawled_at":"2025-09-03T13:02:28.415705"},{"name":"ashishpatel26/500-AI-Agents-Projects","url":"https://github.com/ashishpatel26/500-AI-Agents-Projects","description":"The 500 AI Agents Projects is a curated collection of AI agent use cases across various industries. It showcases practical applications and provides links to open-source projects for implementation, illustrating how AI agents are transforming sectors such as healthcare, finance, education, retail, and more.","stars":8705,"forks":1572,"language":null,"language_color":null,"stars_today":1066,"period_stars":1066,"owner":"ashishpatel26","repo_name":"500-AI-Agents-Projects","avatar_url":"https://avatars.githubusercontent.com/u/3095771?s=40&v=4","crawled_at":"2025-09-03T13:02:28.417480"},{"name":"google/mangle","url":"https://github.com/google/mangle","description":null,"stars":2089,"forks":102,"language":"Go","language_color":"#00ADD8","stars_today":138,"period_stars":138,"owner":"google","repo_name":"mangle","avatar_url":"https://avatars.githubusercontent.com/u/10248140?s=40&v=4","crawled_at":"2025-09-03T13:02:28.418474"},{"name":"resemble-ai/chatterbox","url":"https://github.com/resemble-ai/chatterbox","description":"SoTA open-source TTS","stars":11541,"forks":1441,"language":"Python","language_color":"#3572A5","stars_today":444,"period_stars":444,"owner":"resemble-ai","repo_name":"chatterbox","avatar_url":"https://avatars.githubusercontent.com/u/37295764?s=40&v=4","crawled_at":"2025-09-03T13:02:28.419480"},{"name":"pedroslopez/whatsapp-web.js","url":"https://github.com/pedroslopez/whatsapp-web.js","description":"A WhatsApp client library for NodeJS that connects through the WhatsApp Web browser app","stars":18274,"forks":4395,"language":"JavaScript","language_color":"#f1e05a","stars_today":102,"period_stars":102,"owner":"pedroslopez","repo_name":"whatsapp-web.js","avatar_url":"https://avatars.githubusercontent.com/u/4368928?s=40&v=4","crawled_at":"2025-09-03T13:02:28.420458"},{"name":"LukeGus/Termix","url":"https://github.com/LukeGus/Termix","description":"Termix is a web-based server management platform with SSH terminal, tunneling, and file editing capabilities.","stars":2156,"forks":80,"language":"TypeScript","language_color":"#3178c6","stars_today":153,"period_stars":153,"owner":"LukeGus","repo_name":"Termix","avatar_url":"https://avatars.githubusercontent.com/u/88517757?s=40&v=4","crawled_at":"2025-09-03T13:02:28.421398"},{"name":"rustdesk/rustdesk","url":"https://github.com/rustdesk/rustdesk","description":"An open-source remote desktop application designed for self-hosting, as an alternative to TeamViewer.","stars":97207,"forks":14270,"language":"Rust","language_color":"#dea584","stars_today":115,"period_stars":115,"owner":"rustdesk","repo_name":"rustdesk","avatar_url":"https://avatars.githubusercontent.com/u/71636191?s=40&v=4","crawled_at":"2025-09-03T13:02:28.422366"},{"name":"bytebot-ai/bytebot","url":"https://github.com/bytebot-ai/bytebot","description":"Bytebot is a self-hosted AI desktop agent that automates computer tasks through natural language commands, operating within a containerized Linux desktop environment.","stars":3710,"forks":315,"language":"TypeScript","language_color":"#3178c6","stars_today":147,"period_stars":147,"owner":"bytebot-ai","repo_name":"bytebot","avatar_url":"https://avatars.githubusercontent.com/u/868976?s=40&v=4","crawled_at":"2025-09-03T13:02:28.423220"},{"name":"google/comprehensive-rust","url":"https://github.com/google/comprehensive-rust","description":"This is the Rust course used by the Android team at Google. It provides you the material to quickly teach Rust.","stars":31434,"forks":1867,"language":"Rust","language_color":"#dea584","stars_today":67,"period_stars":67,"owner":"google","repo_name":"comprehensive-rust","avatar_url":"https://avatars.githubusercontent.com/u/89623?s=40&v=4","crawled_at":"2025-09-03T13:02:28.424088"},{"name":"projectdiscovery/nuclei-templates","url":"https://github.com/projectdiscovery/nuclei-templates","description":"Community curated list of templates for the nuclei engine to find security vulnerabilities.","stars":10808,"forks":3008,"language":"JavaScript","language_color":"#f1e05a","stars_today":23,"period_stars":23,"owner":"projectdiscovery","repo_name":"nuclei-templates","avatar_url":"https://avatars.githubusercontent.com/u/65916846?s=40&v=4","crawled_at":"2025-09-03T13:02:28.425054"}];
+                const container = document.getElementById('repos-container');
+                
+                // 清空容器（包括骨架屏）
+                container.innerHTML = '';
+                
+                // 如果没有数据，显示提示
+                if (!repos || repos.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-10">
+                            <i class="fa fa-info-circle text-gray-400 text-3xl mb-3"></i>
+                            <p class="text-gray-500">暂无仓库数据</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 渲染每个仓库卡片
+                repos.forEach(repo => {
+                    const languageColor = languageColors[repo.language] || languageColors.default;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg overflow-hidden card-shadow card-hover';
+                    card.innerHTML = `
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="font-bold text-lg mb-1 hover:text-primary transition-colors">
+                                        <a href="${repo.url}" target="_blank" rel="noopener noreferrer">${repo.name}</a>
+                                    </h3>
+                                    <div class="flex items-center text-sm text-gray-500 mb-2">
+                                        ${repo.language ? `
+                                            <span class="language-dot mr-1.5" style="background-color: ${languageColor}"></span>
+                                            <span>${repo.language}</span>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex items-center bg-gray-100 px-2.5 py-1 rounded-full text-sm font-medium">
+                                    <i class="fa fa-star text-yellow-500 mr-1"></i>
+                                    <span>${formatNumber(repo.stars)}</span>
+                                </div>
+                            </div>
+
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                                ${repo.description || '暂无描述'}
+                            </p>
+
+                            <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <span class="flex items-center mr-4">
+                                        <i class="fa fa-code-fork mr-1"></i>
+                                        <span>${formatNumber(repo.forks)}</span>
+                                    </span>
+                                    <span class="flex items-center text-green-500 font-medium">
+                                        <i class="fa fa-arrow-up mr-1"></i>
+                                        <span>${formatNumber(repo.stars_today)} 今日新增</span>
+                                    </span>
+                                </div>
+                                <a href="${repo.url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 text-sm font-medium flex items-center transition-colors">
+                                    查看详情 <i class="fa fa-external-link ml-1 text-xs"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('渲染仓库列表时出错:', error);
+                const container = document.getElementById('repos-container');
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-10">
+                        <i class="fa fa-exclamation-triangle text-yellow-500 text-3xl mb-3"></i>
+                        <p class="text-gray-500">加载数据时出错，请稍后重试</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

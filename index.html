@@ -3,119 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每日GitHub趋势</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#2eaadc',
-                        secondary: '#171515',
-                        accent: '#f1e05a',
-                        dark: '#161b22',
-                        light: '#f0f6fc',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                }
-            }
+    <title>GitHub Weekly Trending</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .card-shadow {
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            }
-            .card-hover {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-            .card-hover:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-            }
-            .language-dot {
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                display: inline-block;
-            }
-            .skeleton {
-                background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-                background-size: 200% 100%;
-                animation: loading 1.5s infinite;
-            }
-            @keyframes loading {
-                0% { background-position: 200% 0; }
-                100% { background-position: -200% 0; }
-            }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 30px rgba(99, 102, 241, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 8px 40px rgba(99, 102, 241, 0.3);
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.6);
+        }
+
+        .neon-border {
+            position: relative;
+        }
+
+        .neon-border::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.6), rgba(99, 102, 241, 0.3)) border-box;
+            mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, rgba(99, 102, 241, 0.6) 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform .5s, opacity 1s;
+        }
+
+        .ripple:active:after {
+            transform: scale(0, 0);
+            opacity: .3;
+            transition: 0s;
+        }
+
+        .nav-glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .nav-glass.scrolled {
+            background: rgba(15, 23, 42, 0.95);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1);
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .language-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .btn-neon {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #8b5cf6;
+            transition: all 0.3s ease;
+        }
+
+        .btn-neon:hover {
+            background: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen">
+<body class="grid-bg">
+    <div id="particles-js"></div>
+
     <!-- 导航栏 -->
-    <header class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fa fa-github text-2xl text-gray-800"></i>
-                <h1 class="text-xl font-bold text-gray-800">GitHub 每日趋势</h1>
+    <nav class="nav-glass sticky top-0 z-50 py-4 px-6">
+        <div class="container mx-auto flex items-center justify-center">
+            <div class="flex items-center">
+                <i class="fab fa-github text-2xl text-purple-400 mr-3"></i>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+                    GitHub Weekly Trending （Update Everyday）
+                </h1>
             </div>
-            <div class="text-gray-500 text-sm">
+             <div class="text-gray-500 text-sm">
                 <span id="current-date">2025-07-31</span>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- 主要内容 -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- 趋势概览 -->
+
+     <!-- 主要内容 -->
+    <main class="container mx-auto py-8 px-4">
+         <!-- 趋势概览 -->
         <div class="mb-10 text-center">
             <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">今日热门仓库</h2>
             <p class="text-gray-600 max-w-2xl mx-auto">发现最受欢迎的开源项目，了解开发者社区的最新动态和趋势</p>
         </div>
-
-        <!-- 仓库列表容器 - 已添加 -->
-        <div id="repos-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- 加载状态骨架屏 -->
-            <div class="bg-white rounded-lg overflow-hidden card-shadow h-64 skeleton"></div>
-            <div class="bg-white rounded-lg overflow-hidden card-shadow h-64 skeleton"></div>
-            <div class="bg-white rounded-lg overflow-hidden card-shadow h-64 skeleton"></div>
+        <!-- 仓库列表 -->
+        <div id="repos-container" class="grid grid-cols-1 gap-6">
+            <!-- 仓库卡片1 -->
+             <!-- 加载状态骨架屏 -->
+            <div class="glass-card p-6 neon-border"></div>
+            <div class="glass-card p-6 neon-border"></div>
+            <div class="glass-card p-6 neon-border"></div>
         </div>
     </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-gray-800 text-gray-300 py-10 mt-20">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-6 md:mb-0">
-                    <div class="flex items-center space-x-2 mb-2">
-                        <i class="fa fa-github text-xl"></i>
-                        <span class="font-bold text-white">GitHub 趋势</span>
-                    </div>
-                    <p class="text-sm text-gray-400">每日更新的GitHub热门仓库展示</p>
-                </div>
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fa fa-twitter text-xl"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fa fa-github text-xl"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fa fa-linkedin text-xl"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
-                <p>© 2025 GitHub 趋势. 数据来源于GitHub.</p>
-            </div>
-        </div>
+    <footer class="container mx-auto py-8 px-4 text-center text-gray-500 text-sm">
+
+        <p class="mt-2">每日更新的GitHub热门仓库展示</p>
+         <div class="flex space-x-6">
+        </div>        
+        <p>© 2024 GitHub Trending. All rights reserved.</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // 编程语言颜色映射
+         // 编程语言颜色映射
         const languageColors = {
             'Python': '#3572A5',
             'TypeScript': '#3178C6',
@@ -132,7 +188,115 @@
             return num.toLocaleString();
         }
 
-        // 设置当前日期
+        // 粒子背景
+        document.addEventListener('DOMContentLoaded', function() {
+            particlesJS('particles-js', {
+                particles: {
+                    number: {
+                        value: 80,
+                        density: {
+                            enable: true,
+                            value_area: 800
+                        }
+                    },
+                    color: {
+                        value: "#6366f1"
+                    },
+                    shape: {
+                        type: "circle",
+                        stroke: {
+                            width: 0,
+                            color: "#000000"
+                        },
+                        polygon: {
+                            nb_sides: 5
+                        }
+                    },
+                    opacity: {
+                        value: 0.5,
+                        random: true,
+                        anim: {
+                            enable: false,
+                            speed: 1,
+                            opacity_min: 0.1,
+                            sync: false
+                        }
+                    },
+                    size: {
+                        value: 3,
+                        random: true,
+                        anim: {
+                            enable: false,
+                            speed: 40,
+                            size_min: 0.1,
+                            sync: false
+                        }
+                    },
+                    line_linked: {
+                        enable: true,
+                        distance: 150,
+                        color: "#8b5cf6",
+                        opacity: 0.2,
+                        width: 1
+                    },
+                    move: {
+                        enable: true,
+                        speed: 2,
+                        direction: "none",
+                        random: true,
+                        straight: false,
+                        out_mode: "out",
+                        bounce: false,
+                        attract: {
+                            enable: false,
+                            rotateX: 600,
+                            rotateY: 1200
+                        }
+                    }
+                },
+                interactivity: {
+                    detect_on: "canvas",
+                    events: {
+                        onhover: {
+                            enable: true,
+                            mode: "grab"
+                        },
+                        onclick: {
+                            enable: true,
+                            mode: "push"
+                        },
+                        resize: true
+                    },
+                    modes: {
+                        grab: {
+                            distance: 140,
+                            line_linked: {
+                                opacity: 0.5
+                            }
+                        },
+                        bubble: {
+                            distance: 400,
+                            size: 40,
+                            duration: 2,
+                            opacity: 8,
+                            speed: 3
+                        },
+                        repulse: {
+                            distance: 200,
+                            duration: 0.4
+                        },
+                        push: {
+                            particles_nb: 4
+                        },
+                        remove: {
+                            particles_nb: 2
+                        }
+                    }
+                },
+                retina_detect: true
+            });
+
+                 // 设置当前日期
         document.addEventListener('DOMContentLoaded', function() {
             try {
                 // 设置日期
@@ -141,7 +305,7 @@
                 document.getElementById('current-date').textContent = today.toLocaleDateString('zh-CN', options);
 
                 // 渲染仓库列表
-                const repos = [{"name":"QuentinFuxa/WhisperLiveKit","url":"https://github.com/QuentinFuxa/WhisperLiveKit","description":"Real-time & local speech-to-text, translation, and speaker diarization. With server & web UI.","stars":6013,"forks":512,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"QuentinFuxa","repo_name":"WhisperLiveKit","avatar_url":"https://avatars.githubusercontent.com/u/38427957?s=40&v=4","crawled_at":"2025-09-03T13:35:11.393483"},{"name":"laramies/theHarvester","url":"https://github.com/laramies/theHarvester","description":"E-mails, subdomains and names Harvester - OSINT","stars":14129,"forks":2286,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"laramies","repo_name":"theHarvester","avatar_url":"https://avatars.githubusercontent.com/u/3628354?s=40&v=4","crawled_at":"2025-09-03T13:35:11.394832"},{"name":"OpenBMB/MiniCPM-V","url":"https://github.com/OpenBMB/MiniCPM-V","description":"MiniCPM-V 4.5: A GPT-4o Level MLLM for Single Image, Multi Image and High-FPS Video Understanding on Your Phone","stars":21114,"forks":1554,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"OpenBMB","repo_name":"MiniCPM-V","avatar_url":"https://avatars.githubusercontent.com/u/28106858?s=40&v=4","crawled_at":"2025-09-03T13:35:11.395980"},{"name":"MODSetter/SurfSense","url":"https://github.com/MODSetter/SurfSense","description":"Open Source Alternative to NotebookLM / Perplexity, connected to external sources such as Search Engines, Slack, Linear, Jira, ClickUp, Confluence, Notion, YouTube, GitHub, Discord and more. Join our discord:https://discord.gg/ejRNvftDp9","stars":7506,"forks":562,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"MODSetter","repo_name":"SurfSense","avatar_url":"https://avatars.githubusercontent.com/u/122026167?s=40&v=4","crawled_at":"2025-09-03T13:35:11.397035"},{"name":"microsoft/qlib","url":"https://github.com/microsoft/qlib","description":"Qlib is an AI-oriented Quant investment platform that aims to use AI tech to empower Quant Research, from exploring ideas to implementing productions. Qlib supports diverse ML modeling paradigms, including supervised learning, market dynamics modeling, and RL, and is now equipped withhttps://github.com/microsoft/RD-Agentto automate R&D process.","stars":29772,"forks":4600,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"microsoft","repo_name":"qlib","avatar_url":"https://avatars.githubusercontent.com/u/465606?s=40&v=4","crawled_at":"2025-09-03T13:35:11.397841"},{"name":"HKUDS/DeepCode","url":"https://github.com/HKUDS/DeepCode","description":"\"DeepCode: Open Agentic Coding (Paper2Code & Text2Web & Text2Backend)\"","stars":5192,"forks":621,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"HKUDS","repo_name":"DeepCode","avatar_url":"https://avatars.githubusercontent.com/u/145887958?s=40&v=4","crawled_at":"2025-09-03T13:35:11.398710"},{"name":"IBM/mcp-context-forge","url":"https://github.com/IBM/mcp-context-forge","description":"A Model Context Protocol (MCP) Gateway & Registry. Serves as a central management point for tools, resources, and prompts that can be accessed by MCP-compatible LLM applications. Converts REST API endpoints to MCP, composes virtual MCP servers with added security and observability, and converts between protocols (stdio, SSE, Streamable HTTP).","stars":2299,"forks":263,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"IBM","repo_name":"mcp-context-forge","avatar_url":"https://avatars.githubusercontent.com/u/8157583?s=40&v=4","crawled_at":"2025-09-03T13:35:11.399517"},{"name":"EbookFoundation/free-programming-books","url":"https://github.com/EbookFoundation/free-programming-books","description":"📚 Freely available programming books","stars":367156,"forks":64037,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"EbookFoundation","repo_name":"free-programming-books","avatar_url":"https://avatars.githubusercontent.com/u/2022803?s=40&v=4","crawled_at":"2025-09-03T13:35:11.400392"},{"name":"X-PLUG/MobileAgent","url":"https://github.com/X-PLUG/MobileAgent","description":"Mobile-Agent: The Powerful GUI Agent Family","stars":5346,"forks":522,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"X-PLUG","repo_name":"MobileAgent","avatar_url":"https://avatars.githubusercontent.com/u/127390760?s=40&v=4","crawled_at":"2025-09-03T13:35:11.401373"},{"name":"OpenGVLab/InternVL","url":"https://github.com/OpenGVLab/InternVL","description":"[CVPR 2024 Oral] InternVL Family: A Pioneering Open-Source Alternative to GPT-4o. 接近GPT-4o表现的开源多模态对话模型","stars":8983,"forks":693,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"OpenGVLab","repo_name":"InternVL","avatar_url":"https://avatars.githubusercontent.com/u/23737120?s=40&v=4","crawled_at":"2025-09-03T13:35:11.402185"},{"name":"TheAlgorithms/Python","url":"https://github.com/TheAlgorithms/Python","description":"All Algorithms implemented in Python","stars":206426,"forks":47703,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"TheAlgorithms","repo_name":"Python","avatar_url":"https://avatars.githubusercontent.com/u/3709715?s=40&v=4","crawled_at":"2025-09-03T13:35:11.403043"},{"name":"santinic/audiblez","url":"https://github.com/santinic/audiblez","description":"Generate audiobooks from e-books","stars":5419,"forks":352,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"santinic","repo_name":"audiblez","avatar_url":"https://avatars.githubusercontent.com/u/179558?s=40&v=4","crawled_at":"2025-09-03T13:35:11.404035"},{"name":"resemble-ai/chatterbox","url":"https://github.com/resemble-ai/chatterbox","description":"SoTA open-source TTS","stars":11549,"forks":1441,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"resemble-ai","repo_name":"chatterbox","avatar_url":"https://avatars.githubusercontent.com/u/37295764?s=40&v=4","crawled_at":"2025-09-03T13:35:11.404943"},{"name":"sansan0/TrendRadar","url":"https://github.com/sansan0/TrendRadar","description":"🎯 告别信息过载，只看真正关心的新闻 - 多平台热点聚合工具，一键监控今日头条、百度热搜、微博、抖音、知乎、B站等35个平台，智能关键词筛选，自动生成热点分析报告。支持企业微信、飞书、钉钉、Telegram推送，30秒网页部署，1分钟手机通知，无需编程基础。也支持docker私人部署⭐ 让算法为你服务，而非被算法绑架","stars":2608,"forks":1699,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"sansan0","repo_name":"TrendRadar","avatar_url":"https://avatars.githubusercontent.com/u/65916846?s=40&v=4","crawled_at":"2025-09-03T13:35:11.405723"},{"name":"swisskyrepo/PayloadsAllTheThings","url":"https://github.com/swisskyrepo/PayloadsAllTheThings","description":"A list of useful payloads and bypass for Web Application Security and Pentest/CTF","stars":69645,"forks":15877,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"swisskyrepo","repo_name":"PayloadsAllTheThings","avatar_url":"https://avatars.githubusercontent.com/u/12152583?s=40&v=4","crawled_at":"2025-09-03T13:35:11.406606"},{"name":"mindee/doctr","url":"https://github.com/mindee/doctr","description":"docTR (Document Text Recognition) - a seamless, high-performing & accessible library for OCR-related tasks powered by Deep Learning.","stars":5352,"forks":562,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"mindee","repo_name":"doctr","avatar_url":"https://avatars.githubusercontent.com/u/76527547?s=40&v=4","crawled_at":"2025-09-03T13:35:11.407427"},{"name":"chubin/cheat.sh","url":"https://github.com/chubin/cheat.sh","description":"the only cheat sheet you need","stars":40136,"forks":1867,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"chubin","repo_name":"cheat.sh","avatar_url":"https://avatars.githubusercontent.com/u/3875145?s=40&v=4","crawled_at":"2025-09-03T13:35:11.408221"},{"name":"Arindam200/awesome-ai-apps","url":"https://github.com/Arindam200/awesome-ai-apps","description":"A collection of projects showcasing RAG, agents, workflows, and other AI use cases","stars":4752,"forks":607,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"Arindam200","repo_name":"awesome-ai-apps","avatar_url":"https://avatars.githubusercontent.com/u/109217591?s=40&v=4","crawled_at":"2025-09-03T13:35:11.409194"}];
+                const repos = [{"name":"QuentinFuxa/WhisperLiveKit","url":"https://github.com/QuentinFuxa/WhisperLiveKit","description":"Real-time & local speech-to-text, translation, and speaker diarization. With server & web UI.","stars":6158,"forks":524,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"QuentinFuxa","repo_name":"WhisperLiveKit","avatar_url":"https://avatars.githubusercontent.com/u/38427957?s=40&v=4","crawled_at":"2025-09-04T12:25:52.616869"},{"name":"laramies/theHarvester","url":"https://github.com/laramies/theHarvester","description":"E-mails, subdomains and names Harvester - OSINT","stars":14167,"forks":2286,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"laramies","repo_name":"theHarvester","avatar_url":"https://avatars.githubusercontent.com/u/3628354?s=40&v=4","crawled_at":"2025-09-04T12:25:52.621175"},{"name":"OpenBMB/MiniCPM-V","url":"https://github.com/OpenBMB/MiniCPM-V","description":"MiniCPM-V 4.5: A GPT-4o Level MLLM for Single Image, Multi Image and High-FPS Video Understanding on Your Phone","stars":21173,"forks":1557,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"OpenBMB","repo_name":"MiniCPM-V","avatar_url":"https://avatars.githubusercontent.com/u/28106858?s=40&v=4","crawled_at":"2025-09-04T12:25:52.622242"},{"name":"MODSetter/SurfSense","url":"https://github.com/MODSetter/SurfSense","description":"Open Source Alternative to NotebookLM / Perplexity, connected to external sources such as Search Engines, Slack, Linear, Jira, ClickUp, Confluence, Notion, YouTube, GitHub, Discord and more. Join our discord:https://discord.gg/ejRNvftDp9","stars":7538,"forks":564,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"MODSetter","repo_name":"SurfSense","avatar_url":"https://avatars.githubusercontent.com/u/122026167?s=40&v=4","crawled_at":"2025-09-04T12:25:52.623237"},{"name":"microsoft/qlib","url":"https://github.com/microsoft/qlib","description":"Qlib is an AI-oriented Quant investment platform that aims to use AI tech to empower Quant Research, from exploring ideas to implementing productions. Qlib supports diverse ML modeling paradigms, including supervised learning, market dynamics modeling, and RL, and is now equipped withhttps://github.com/microsoft/RD-Agentto automate R&D process.","stars":29849,"forks":4615,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"microsoft","repo_name":"qlib","avatar_url":"https://avatars.githubusercontent.com/u/465606?s=40&v=4","crawled_at":"2025-09-04T12:25:52.624032"},{"name":"IBM/mcp-context-forge","url":"https://github.com/IBM/mcp-context-forge","description":"A Model Context Protocol (MCP) Gateway & Registry. Serves as a central management point for tools, resources, and prompts that can be accessed by MCP-compatible LLM applications. Converts REST API endpoints to MCP, composes virtual MCP servers with added security and observability, and converts between protocols (stdio, SSE, Streamable HTTP).","stars":2335,"forks":267,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"IBM","repo_name":"mcp-context-forge","avatar_url":"https://avatars.githubusercontent.com/u/8157583?s=40&v=4","crawled_at":"2025-09-04T12:25:52.624877"},{"name":"X-PLUG/MobileAgent","url":"https://github.com/X-PLUG/MobileAgent","description":"Mobile-Agent: The Powerful GUI Agent Family","stars":5380,"forks":524,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"X-PLUG","repo_name":"MobileAgent","avatar_url":"https://avatars.githubusercontent.com/u/127390760?s=40&v=4","crawled_at":"2025-09-04T12:25:52.625657"},{"name":"EbookFoundation/free-programming-books","url":"https://github.com/EbookFoundation/free-programming-books","description":"📚 Freely available programming books","stars":367240,"forks":64046,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"EbookFoundation","repo_name":"free-programming-books","avatar_url":"https://avatars.githubusercontent.com/u/2022803?s=40&v=4","crawled_at":"2025-09-04T12:25:52.626587"},{"name":"microsoft/RD-Agent","url":"https://github.com/microsoft/RD-Agent","description":"Research and development (R&D) is crucial for the enhancement of industrial productivity, especially in the AI era, where the core aspects of R&D are mainly focused on data and models. We are committed to automating these high-value generic R&D processes through R&D-Agent, which lets AI drive data-driven AI. 🔗https://aka.ms/RD-Agent-Tech-Report","stars":7378,"forks":766,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"microsoft","repo_name":"RD-Agent","avatar_url":"https://avatars.githubusercontent.com/u/465606?s=40&v=4","crawled_at":"2025-09-04T12:25:52.627533"},{"name":"HKUDS/DeepCode","url":"https://github.com/HKUDS/DeepCode","description":"\"DeepCode: Open Agentic Coding (Paper2Code & Text2Web & Text2Backend)\"","stars":5414,"forks":666,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"HKUDS","repo_name":"DeepCode","avatar_url":"https://avatars.githubusercontent.com/u/145887958?s=40&v=4","crawled_at":"2025-09-04T12:25:52.628311"},{"name":"TheAlgorithms/Python","url":"https://github.com/TheAlgorithms/Python","description":"All Algorithms implemented in Python","stars":206513,"forks":47710,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"TheAlgorithms","repo_name":"Python","avatar_url":"https://avatars.githubusercontent.com/u/3709715?s=40&v=4","crawled_at":"2025-09-04T12:25:52.629241"},{"name":"santinic/audiblez","url":"https://github.com/santinic/audiblez","description":"Generate audiobooks from e-books","stars":5440,"forks":354,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"santinic","repo_name":"audiblez","avatar_url":"https://avatars.githubusercontent.com/u/179558?s=40&v=4","crawled_at":"2025-09-04T12:25:52.630130"},{"name":"MetaCubeX/mihomo","url":"https://github.com/MetaCubeX/mihomo","description":"A simple Python Pydantic model for Honkai: Star Rail parsed data from the Mihomo API.","stars":22788,"forks":3270,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"MetaCubeX","repo_name":"mihomo","avatar_url":"https://avatars.githubusercontent.com/u/6277000?s=40&v=4","crawled_at":"2025-09-04T12:25:52.631216"},{"name":"chubin/cheat.sh","url":"https://github.com/chubin/cheat.sh","description":"the only cheat sheet you need","stars":40151,"forks":1868,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"chubin","repo_name":"cheat.sh","avatar_url":"https://avatars.githubusercontent.com/u/3875145?s=40&v=4","crawled_at":"2025-09-04T12:25:52.632012"},{"name":"XiaoYouChR/Ghost-Downloader-3","url":"https://github.com/XiaoYouChR/Ghost-Downloader-3","description":"A cross-platform QUIC AI-boost fluent-design multi-threaded downloader built with Python.","stars":4120,"forks":217,"language":"Python","language_color":"#3572A5","stars_today":0,"period_stars":0,"owner":"XiaoYouChR","repo_name":"Ghost-Downloader-3","avatar_url":"https://avatars.githubusercontent.com/u/87308195?s=40&v=4","crawled_at":"2025-09-04T12:25:52.632790"}];
                 const container = document.getElementById('repos-container');
                 
                 // 清空容器（包括骨架屏）
@@ -163,47 +327,44 @@
                     const languageColor = languageColors[repo.language] || languageColors.default;
                     
                     const card = document.createElement('div');
-                    card.className = 'bg-white rounded-lg overflow-hidden card-shadow card-hover';
+                    card.className = 'glass-card p-6 neon-border';
                     card.innerHTML = `
-                        <div class="p-6">
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 class="font-bold text-lg mb-1 hover:text-primary transition-colors">
-                                        <a href="${repo.url}" target="_blank" rel="noopener noreferrer">${repo.name}</a>
-                                    </h3>
-                                    <div class="flex items-center text-sm text-gray-500 mb-2">
-                                        ${repo.language ? `
+                        <div class="flex flex-col md:flex-row md:items-start gap-6">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-book text-gray-400 mr-2"></i>
+                                    <a href="${repo.url}" class="text-xl font-semibold text-indigo-400 hover:underline">${repo.name}</a>
+
+                                </div>
+                                <p class="text-gray-400 mb-4">${repo.description || '暂无描述'}</p>
+                                <div class="flex flex-wrap gap-4 text-sm text-gray-400">
+                                <div class="flex items-center">
+                                ${repo.language ? `
                                             <span class="language-dot mr-1.5" style="background-color: ${languageColor}"></span>
                                             <span>${repo.language}</span>
                                         ` : ''}
-                                    </div>
                                 </div>
-                                <div class="flex items-center bg-gray-100 px-2.5 py-1 rounded-full text-sm font-medium">
-                                    <i class="fa fa-star text-yellow-500 mr-1"></i>
-                                    <span>${formatNumber(repo.stars)}</span>
-                                </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-star mr-1"></i>
+                                ${formatNumber(repo.stars)}
                             </div>
-
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                                ${repo.description || '暂无描述'}
-                            </p>
-
-                            <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                                <div class="flex items-center text-sm text-gray-500">
-                                    <span class="flex items-center mr-4">
-                                        <i class="fa fa-code-fork mr-1"></i>
-                                        <span>${formatNumber(repo.forks)}</span>
-                                    </span>
-                                    <span class="flex items-center text-green-500 font-medium">
-                                        <i class="fa fa-arrow-up mr-1"></i>
-                                        <span>${formatNumber(repo.stars_today)} 今日新增</span>
-                                    </span>
-                                </div>
-                                <a href="${repo.url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 text-sm font-medium flex items-center transition-colors">
-                                    查看详情 <i class="fa fa-external-link ml-1 text-xs"></i>
-                                </a>
+                            <div class="flex items-center">
+                                <i class="fas fa-code-branch mr-1"></i>
+                                ${formatNumber(repo.forks)}
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa fa-arrow-up mr-1"></i>
+                                <span>${formatNumber(repo.stars_today)} 今日新增</span>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="flex flex-col items-end">
+                        <a href="${repo.url}" class="btn-neon px-4 py-2 rounded-md text-center text-sm">
+                            <i class="fas fa-info-circle mr-2"></i>查看详情
+                        </a>
+                    </div>
+               
                     `;
                     
                     container.appendChild(card);
@@ -218,6 +379,18 @@
                     </div>
                 `;
             }
+        });
+
+            // 导航栏滚动效果
+            const nav = document.querySelector('nav');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+            });
+
         });
     </script>
 </body>
